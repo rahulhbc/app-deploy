@@ -1,4 +1,4 @@
-module "3tier_app" {
+module "tier3_app" {
   source = "github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
 }
 
