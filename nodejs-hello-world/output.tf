@@ -1,11 +1,11 @@
 output "resource_group_name" {
   description = "The name of the existing resource group"
-  value       = data.azurerm_resource_group.rg.name
+  value       = data.azurerm_resource_group.existing_rg.name
 }
 
 output "location" {
   description = "The location of the existing resource group"
-  value       = data.azurerm_resource_group.rg.location
+  value       = data.azurerm_resource_group.existing_rg.location
 }
 
 output "vnet_name" {
