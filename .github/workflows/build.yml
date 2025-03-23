@@ -47,9 +47,9 @@ jobs:
       run: terraform plan -out=tfplan
       working-directory: nodejs-hello-world
 
-#    - name: Terraform Apply
-#      run: terraform apply -auto-approve tfplan
-#      working-directory: nodejs-hello-world
+    - name: Terraform Apply
+      run: terraform apply -auto-approve tfplan
+      working-directory: nodejs-hello-world
 
-#    - name: Verify Deployment
-#      run: curl http://${{ secrets.PUBLIC_IP }}
+    - name: Verify Deployment
+      run: curl http://${{ secrets.PUBLIC_IP }}
