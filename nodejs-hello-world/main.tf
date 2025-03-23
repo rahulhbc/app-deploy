@@ -3,11 +3,11 @@ module "tier3_app" {
 }
 
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
-  name                  = "frontend-vm"
-  resource_group_name   = module.tier3_app.resource_group_name
-  location              = module.tier3_app.location
-  size                  = "Standard_B1s"
-  admin_username        = "azureuser"
+  name                = "frontend-vm"
+  resource_group_name = "iac-secure-rg"
+  location            = "East US"
+  size                = "Standard_B1s"
+  admin_username      = "azureuser"
 
   disable_password_authentication = true
   admin_ssh_key {
