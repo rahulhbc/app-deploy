@@ -12,7 +12,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
   disable_password_authentication = true
   admin_ssh_key {
     username   = "azureuser"
-    public_key = file("~/.ssh_keys/id_rsa.pub")
+    public_key = file("~/.ssh/id_rsa.pub")
   }
 
   network_interface_ids = [module.tier3_app.frontend_nic_id]
@@ -43,7 +43,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
       type        = "ssh"
       host        = module.tier3_app.frontend_public_ip
       user        = "azureuser"
-      private_key = file("~/.ssh_keys/id_rsa")
+      private_key = file("~/.ssh/id_rsa")
     }
   }
 }
