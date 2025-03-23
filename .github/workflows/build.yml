@@ -46,11 +46,15 @@ jobs:
       run: terraform plan -out=tfplan
       working-directory: nodejs-hello-world
 
-    - name: Terraform Import Resource Group
-      run: | 
-             terraform import module.tier3_app.azurerm_virtual_network.vnet "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/virtualNetworks/iac-vnet"
-             terraform import module.tier3_app.azurerm_network_security_group.frontend_nsg "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/networkSecurityGroups/frontend-nsg"
-             terraform import module.tier3_app.azurerm_public_ip.frontend_pip "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/publicIPAddresses/frontend-pip"
+#    - name: Terraform Import Resource Group
+#      run: | 
+#             terraform import module.tier3_app.azurerm_virtual_network.vnet "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/virtualNetworks/iac-vnet"
+#             terraform import module.tier3_app.azurerm_network_security_group.frontend_nsg "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/networkSecurityGroups/frontend-nsg"
+#             terraform import module.tier3_app.azurerm_public_ip.frontend_pip "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/publicIPAddresses/frontend-pip"
+#      working-directory: nodejs-hello-world
+
+    - name: Terraform State List
+      run: terraform state list
       working-directory: nodejs-hello-world
 
     - name: Terraform Apply
