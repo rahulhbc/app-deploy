@@ -4,8 +4,8 @@ module "tier3_app" {
 
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                  = "frontend-vm"
-  resource_group_name   = module.3tier_app.resource_group_name
-  location              = module.3tier_app.location
+  resource_group_name   = module.tier3_app.resource_group_name
+  location              = module.tier3_app.location
   size                  = "Standard_B1s"
   admin_username        = "azureuser"
 
@@ -15,7 +15,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     public_key = file("~/.ssh/id_rsa.pub")
   }
 
-  network_interface_ids = [module.3tier_app.frontend_nic_id]
+  network_interface_ids = [module.tier3_app.frontend_nic_id]
 
   source_image_reference {
     publisher = "Canonical"
@@ -34,7 +34,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
     connection {
       type        = "ssh"
-      host        = module.3tier_app.frontend_public_ip
+      host        = module.tier3_app.frontend_public_ip
       user        = "azureuser"
       private_key = file("~/.ssh/id_rsa")
     }
