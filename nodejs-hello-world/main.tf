@@ -1,5 +1,7 @@
 module "tier3_app" {
   source = "github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
+  resource_group_name  = "iac-secure-rg"  # Pass the existing resource group
+  location             = "East US"        # Pass the location as well
 }
 
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
