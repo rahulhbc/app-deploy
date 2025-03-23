@@ -43,6 +43,10 @@ jobs:
       run: terraform validate
       working-directory: nodejs-hello-world
 
+    - name: Terraform Import Resource Group
+      run: terraform import module.tier3_app.azurerm_resource_group.rg "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg"
+      working-directory: nodejs-hello-world
+
     - name: Terraform Plan
       run: terraform plan -out=tfplan
       working-directory: nodejs-hello-world
