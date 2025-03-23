@@ -1,23 +1,3 @@
-# Data source to reference an existing resource group
-data "azurerm_resource_group" "existing_rg" {
-  name = "iac-secure-rg"
-}
-
-data "azurerm_virtual_network" "vnet" {
-  name                = "iac-vnet"
-  resource_group_name = data.azurerm_resource_group.rg.name
-}
-
-data "azurerm_network_security_group" "frontend_nsg" {
-  name                = "frontend-nsg"
-  resource_group_name = data.azurerm_resource_group.rg.name
-}
-
-data "azurerm_public_ip" "frontend_pip" {
-  name                = "frontend-pip"
-  resource_group_name = data.azurerm_resource_group.rg.name
-}
-
 module "tier3_app" {
   source              = "github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
   resource_group_name = data.azurerm_resource_group.existing_rg.name
@@ -26,8 +6,8 @@ module "tier3_app" {
 
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                = "frontend-vm"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-  location            = data.azurerm_resource_group.existing_rg.location
+  resource_group_name = azurerm_resource_group.existing_rg.name
+  location            = azurerm_resource_group.existing_rg.location
   size                = "Standard_B1s"
   admin_username      = "azureuser"
 
