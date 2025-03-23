@@ -20,8 +20,8 @@ module "tier3_app" {
 
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                = "frontend-vm"
-  resource_group_name = azurerm_resource_group.existing_rg.name
-  location            = azurerm_resource_group.existing_rg.location
+  resource_group_name = data.azurerm_resource_group.existing_rg.name
+  location            = data.azurerm_resource_group.existing_rg.location
   size                = "Standard_B1s"
   admin_username      = "azureuser"
 
