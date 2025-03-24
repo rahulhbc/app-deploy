@@ -41,6 +41,15 @@ jobs:
     - name: Terraform Validate
       run: terraform validate
       working-directory: nodejs-hello-world
+
+    - name: Terraform State Remove
+      run: |
+        terraform state rm module.tier3_app
+ #      terraform state rm module.tier3_app.azurerm_resource_group.rg
+ #      terraform state rm module.tier3_app.azurerm_public_ip.frontend_pip
+ #      terraform state rm module.tier3_app.azurerm_network_security_group.frontend_nsg
+ #      terraform state rm module.tier3_app.azurerm_virtual_network.vnet
+      working-directory: nodejs-hello-world
   
     - name: Terraform Plan
       run: terraform plan -out=tfplan
