@@ -58,7 +58,6 @@ resource "azurerm_virtual_machine_extension" "custom_script" {
         sudo apt-get update -y && \
         sudo apt-get install -y docker-ce && \
         sudo systemctl start docker && \
-        sudo docker login -u '${DOCKER_USERNAME}' -p '${DOCKER_PASSWORD}' && \
         sudo docker pull rahulhbc/nodejs-hello-world:v1 && \
         sudo docker run -d -p 80:8080 rahulhbc/nodejs-hello-world:v1"
     }
