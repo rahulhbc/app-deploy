@@ -51,7 +51,7 @@ resource "azurerm_virtual_machine_extension" "custom_script" {
 
   settings = <<SETTINGS
     {
-        "fileUris": ["https://github.com/rahulhbc/app-deploy/tree/feat/test_branch1/nodejs-hello-world/userdata.sh"],
+        "fileUris": ["https://raw.githubusercontent.com/rahulhbc/app-deploy/refs/heads/feat/test_branch1/nodejs-hello-world/userdata.sh"],
         "commandToExecute": "bash userdata.sh"
     }
   SETTINGS
