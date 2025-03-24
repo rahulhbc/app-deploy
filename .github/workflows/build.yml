@@ -76,7 +76,10 @@ jobs:
         ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       run: |
-        terraform state rm module.network || echo "Resource not found in state"
+        terraform state rm module.network.azurerm_virtual_network.vnet || echo "Resource not found in state"
+        terraform state rm module.network.azurerm_network_security_group.frontend_nsg || echo "Resource not found in state"
+        terraform state rm module.network.azurerm_public_ip.frontend_pip || echo "Resource not found in state"
+        terraform state rm module.network.aazurerm_subnet.frontend || echo "Resource not found in state"
       
     - name: Terraform Import Resources
       env:
