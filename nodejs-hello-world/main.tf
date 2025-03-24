@@ -35,7 +35,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
   source_image_reference {
     publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
+    offer     = "UbuntuServer"
     sku       = "19_04-gen2"
     version   = "19.04.202001220"
   }
