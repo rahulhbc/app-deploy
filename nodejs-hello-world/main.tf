@@ -24,15 +24,6 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     public_key = var.ssh_public_key
   }
 
-  os_profile {
-    computer_name  = "frontend-vm"
-    admin_username = "azureuser"
-  }
-
-  os_profile_linux_config {
-    disable_password_authentication = true
-  }
-
   network_interface_ids = [data.terraform_remote_state.networking.outputs.frontend_nic_id]
 
   os_disk {
@@ -47,18 +38,6 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     offer     = "UbuntuServer"
     sku       = "20.04-LTS"
     version   = "latest"
-  }
-
-  # Output IP
-  output "public_ip" {
-    description = "Public IP address of the VM"
-    value       = data.terraform_remote_state.network.outputs.public_ip
-  }
-
-  # Output VM Details
-  output "vm_name" {
-    description = "Name of the virtual machine"
-    value       = azurerm_linux_virtual_machine.frontend_vm.name
   }
 
   provisioner "remote-exec" {
