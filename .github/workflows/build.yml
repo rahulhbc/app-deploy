@@ -95,6 +95,18 @@ jobs:
             rm -rf .terraform .terraform.lock.hcl
         working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
+      # Terraform Init and Plan
+      - name: Terraform Init (app-deploy)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: terraform init - upgrade
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
+
       # Import Existing VM if Any
       - name: Import Existing VM (if any)
         env:
@@ -109,16 +121,16 @@ jobs:
           terraform import azurerm_linux_virtual_machine.frontend_vm "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/iac-secure-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm"
         working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
-      - name: Terraform Init (app-deploy)
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
-          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: terraform init
-        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
+#      - name: Terraform Init (app-deploy)
+#        env:
+#          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+#          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+#          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+#          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+#          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+#        run: terraform init
+#        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
       - name: Terraform Plan (app-deploy)
         env:
