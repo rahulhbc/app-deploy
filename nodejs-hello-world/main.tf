@@ -1,27 +1,20 @@
-data "azurerm_resource_group" "existing_rg" {
-  name = "iac-secure-rg" # Ensure this matches the actual resource group name
+# Fetch existing Terraform state from 3TierIaC
+data "terraform_remote_state" "networking" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "iac-secure-rg"
+    storage_account_name = "yourstorageaccount"
+    container_name       = "tfstate"
+    key                  = "3TierIaC.tfstate"
+  }
 }
 
-data "azurerm_virtual_network" "vnet" {
-  name                = "iac-vnet"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-}
-
-data "azurerm_network_security_group" "frontend_nsg" {
-  name                = "frontend-nsg"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-}
-
-module "network" {
-  source = "git::https://github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
-  #  resource_group_name = data.azurerm_resource_group.existing_rg.name
-  #  location            = data.azurerm_resource_group.existing_rg.location
-}
-
+# Use the outputs from 3TierIaC instead of defining networking again
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                = "frontend-vm"
-  resource_group_name = module.network.resource_group_name
-  location            = module.network.location
+  resource_group_name = data.terraform_remote_state.networking.outputs.resource_group_name
+  location            = data.terraform_remote_state.networking.outputs.location
   size                = "Standard_B1s"
   admin_username      = "azureuser"
 
@@ -31,7 +24,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     public_key = file("~/.ssh/id_rsa.pub")
   }
 
-  network_interface_ids = [module.network.frontend_nic_id]
+  network_interface_ids = [data.terraform_remote_state.networking.outputs.frontend_nic_id]
 
   os_disk {
     caching              = "ReadWrite"
@@ -57,7 +50,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
     connection {
       type        = "ssh"
-      host        = module.network.frontend_public_ip
+      host        = data.terraform_remote_state.networking.outputs.frontend_public_ip
       user        = "azureuser"
       private_key = file("~/.ssh/id_rsa")
     }
