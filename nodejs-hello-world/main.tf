@@ -4,7 +4,7 @@ data "terraform_remote_state" "networking" {
 
   config = {
     resource_group_name  = "iac-secure-rg"
-    storage_account_name = "app-deploy"
+    storage_account_name = "appdeploy001"
     container_name       = "tfstate"
     key                  = "3TierIaC.tfstate"
   }
