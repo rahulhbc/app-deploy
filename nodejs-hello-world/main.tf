@@ -50,7 +50,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
     connection {
       type        = "ssh"
-      host        = data.terraform_remote_state.network.outputs.frontend_public_ip
+      host        = data.terraform_remote_state.network.outputs.frontend_pip
       user        = "azureuser"
       private_key = file("~/.ssh/id_rsa")
     }

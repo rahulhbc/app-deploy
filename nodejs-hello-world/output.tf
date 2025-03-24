@@ -1,6 +1,6 @@
-output "frontend_public_ip" {
+output "frontend_pip" {
   description = "Public IP address of the VM"
-  value       = data.terraform_remote_state.network.outputs.frontend_public_ip 
+  value       = data.terraform_remote_state.network.outputs.frontend_pip 
 }
 
 output "resource_group_name" {
