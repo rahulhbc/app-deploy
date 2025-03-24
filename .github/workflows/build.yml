@@ -34,33 +34,31 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Authenticate to Azure
+    - name: Terraform Init
       env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      run: az login --service-principal -u $ARM_CLIENT_ID -p $ARM_CLIENT_SECRET --tenant $ARM_TENANT_ID
-
-    - name: Terraform Init
       run: terraform init
       working-directory: nodejs-hello-world
 
-    - name: Terraform Validate
-      run: terraform validate
-      working-directory: nodejs-hello-world
-
     #Added configuration for Terraform State Remove
-    - name: Terraform State Remove
-      run: |
-        terraform state rm module.tier3_app
- #      terraform state rm module.tier3_app.azurerm_resource_group.rg
- #      terraform state rm module.tier3_app.azurerm_public_ip.frontend_pip
- #      terraform state rm module.tier3_app.azurerm_network_security_group.frontend_nsg
- #      terraform state rm module.tier3_app.azurerm_virtual_network.vnet
-      working-directory: nodejs-hello-world
+#    - name: Terraform State Remove
+#      run: |
+#        terraform state rm module.tier3_app
+#      terraform state rm module.tier3_app.azurerm_resource_group.rg
+#      terraform state rm module.tier3_app.azurerm_public_ip.frontend_pip
+#      terraform state rm module.tier3_app.azurerm_network_security_group.frontend_nsg
+#      terraform state rm module.tier3_app.azurerm_virtual_network.vnet
+#      working-directory: nodejs-hello-world
   
     - name: Terraform Plan
+      env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}  
       run: terraform plan -out=tfplan
       working-directory: nodejs-hello-world
 
@@ -72,11 +70,12 @@ jobs:
         terraform import module.tier3_app.azurerm_subnet.frontend "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/virtualNetworks/iac-vnet/subnets/frontend-subnet"
       working-directory: nodejs-hello-world
 
-    - name: Terraform State List
-      run: terraform state list
-      working-directory: nodejs-hello-world
-
     - name: Terraform Apply
+      env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       run: terraform apply -auto-approve tfplan
       working-directory: nodejs-hello-world
 
