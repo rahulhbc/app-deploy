@@ -22,6 +22,15 @@ jobs:
  #     - name: Debug - Full Files After Checkout (Infra)
  #       run: find ${{ github.workspace }} -type d
 
+      # Set up SSH Keys (Deploy Infra)
+      - name: Set up SSH Keys
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          chmod 600 ~/.ssh/id_rsa
+          chmod 644 ~/.ssh/id_rsa.pub     
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -62,9 +71,18 @@ jobs:
           path: app-deploy
 
       # Debugging Step to Check Directory Structure
-      - name: Debug - Full Directory Listing (App)
-        run: find ${{ github.workspace }} -type d
-              
+      #- name: Debug - Full Directory Listing (App)
+      #  run: find ${{ github.workspace }} -type d
+      
+      # Set up SSH Keys (Deploy App)
+      - name: Set up SSH Keys
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          chmod 600 ~/.ssh/id_rsa
+          chmod 644 ~/.ssh/id_rsa.pub
+      
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:

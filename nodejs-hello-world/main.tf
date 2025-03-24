@@ -10,6 +10,17 @@ data "terraform_remote_state" "networking" {
   }
 }
 
+# SSH Key Variables
+variable "ssh_public_key" {
+  description = "SSH public key for VM login"
+  type        = string
+}
+
+variable "ssh_private_key" {
+  description = "SSH private key for VM login"
+  type        = string
+}
+
 # Use the outputs from 3TierIaC instead of defining networking again
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                = "frontend-vm"
@@ -18,10 +29,14 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
   size                = "Standard_B1s"
   admin_username      = "azureuser"
 
-  disable_password_authentication = true
+
   admin_ssh_key {
     username   = "azureuser"
     public_key = file("~/.ssh/id_rsa.pub")
+  }
+
+  os_profile_linux_config {
+    disable_password_authentication = true
   }
 
   network_interface_ids = [data.terraform_remote_state.networking.outputs.frontend_nic_id]
@@ -38,6 +53,18 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     offer     = "UbuntuServer"
     sku       = "20.04-LTS"
     version   = "latest"
+  }
+
+  # Output IP
+  output "public_ip" {
+    description = "Public IP address of the VM"
+    value       = data.terraform_remote_state.network.outputs.public_ip
+  }
+
+  # Output VM Details
+  output "vm_name" {
+    description = "Name of the virtual machine"
+    value       = azurerm_linux_virtual_machine.frontend_vm.name
   }
 
   provisioner "remote-exec" {
