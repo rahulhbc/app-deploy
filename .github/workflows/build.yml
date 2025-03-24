@@ -19,8 +19,8 @@ jobs:
           path: multi_tier_arch
       
       # Debugging Step to Check Directory Structure
-      - name: Debug - List Files After Checkout (Infra)
-        run: ls -R ${{ github.workspace }}/multi_tier_arch
+      - name: Debug - Full Files After Checkout (Infra)
+        run: find ${{ github.workspace }} -type d
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
