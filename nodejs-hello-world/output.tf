@@ -1,6 +1,6 @@
 output "public_ip" {
   description = "Public IP address of the VM"
-  value       = data.terraform_remote_state.network.outputs.public_ip
+  value       = data.terraform_remote_state.networking.outputs.public_ip
 }
 
 output "resource_group_name" {
