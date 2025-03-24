@@ -1,19 +1,29 @@
+output "frontend_pip" {
+  description = "Public IP address of the VM"
+  value       = data.terraform_remote_state.network.outputs.frontend_pip
+}
+
 output "resource_group_name" {
   description = "The name of the existing resource group"
-  value       = data.azurerm_resource_group.existing_rg.name
+  value       = data.terraform_remote_state.network.outputs.resource_group_name
 }
 
 output "location" {
   description = "The location of the existing resource group"
-  value       = data.azurerm_resource_group.existing_rg.location
+  value       = data.terraform_remote_state.network.outputs.location
 }
 
 output "vnet_name" {
   description = "The name of the existing Virtual Network"
-  value       = data.azurerm_virtual_network.vnet.name
+  value       = data.terraform_remote_state.network.outputs.vnet_name
 }
 
 output "nsg_name" {
   description = "The name of the existing Network Security Group"
-  value       = data.azurerm_network_security_group.frontend_nsg.name
+  value       = data.terraform_remote_state.network.outputs.nsg_name
+}
+
+output "frontend_nic_id" {
+  description = "Network Interface ID from Network State"
+  value       = data.terraform_remote_state.network.outputs.frontend_nic_id
 }

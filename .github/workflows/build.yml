@@ -9,54 +9,156 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-infra:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 3TierIaC Repository
+        uses: actions/checkout@v3
+        with:
+          repository : rahulhbc/3TierIaC
+          path: multi_tier_arch
+      
+      # Debugging Step to Check Directory Structure
+ #     - name: Debug - Full Files After Checkout (Infra)
+ #       run: find ${{ github.workspace }} -type d
+
+      # Set up SSH Keys (Deploy Infra)
+      - name: Set up SSH Keys
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          chmod 600 ~/.ssh/id_rsa
+          chmod 644 ~/.ssh/id_rsa.pub     
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Terraform Init (3TierIaC)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: terraform init
+        working-directory: ${{ github.workspace }}/multi_tier_arch/multi_tier_arch
+        
+
+      - name: Terraform Apply (3TierIaC)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: terraform apply -auto-approve
+        working-directory: ${{ github.workspace }}/multi_tier_arch/multi_tier_arch
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs: deploy-infra  # Ensure infra is deployed before app deployment
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout app-deploy Repository
+        uses: actions/checkout@v3
+        with:
+          path: app-deploy
+      
+      # Set up SSH Keys (Deploy App)
+      - name: Set up SSH Keys
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          chmod 600 ~/.ssh/id_rsa
+          chmod 644 ~/.ssh/id_rsa.pub
+      
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
 
-      # Create SSH Key Files
-    - name: Create SSH Key Files
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        echo "${{ secrets.SSH_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
-        chmod 600 ~/.ssh/id_rsa
-        chmod 644 ~/.ssh/id_rsa.pub
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_wrapper: false
+      - name: Setup Docker Credentials
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "docker hub credentials set"    
 
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # Clean Up Terraform Lock and Cache    
+      - name: Clean Up Terraform Lock and Cache
+        run: |
+            rm -rf .terraform .terraform.lock.hcl
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
-    - name: Terraform Init
-      run: terraform init
-      working-directory: nodejs-hello-world
+      # Terraform Init and Plan
+      - name: Terraform Init (app-deploy)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: terraform init -upgrade
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
-    - name: Terraform Validate
-      run: terraform validate
-      working-directory: nodejs-hello-world
-  
-    - name: Terraform Plan
-      run: terraform plan -out=tfplan
-      working-directory: nodejs-hello-world
+      # Import Existing VM if Any
+      - name: Import Existing VM (if any)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          terraform state show azurerm_linux_virtual_machine.frontend_vm || \
+          terraform import azurerm_linux_virtual_machine.frontend_vm "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/iac-secure-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm"
+          terraform import azurerm_virtual_machine_extension.custom_script "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/iac-secure-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm/extensions/vmCustomScript"
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
-    - name: Terraform Import Resource Group
-      run: | 
-             terraform import module.tier3_app.azurerm_virtual_network.vnet "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/virtualNetworks/iac-vnet"
-             terraform import module.tier3_app.azurerm_network_security_group.frontend_nsg "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/networkSecurityGroups/frontend-nsg"
-             terraform import module.tier3_app.azurerm_public_ip.frontend_pip "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/publicIPAddresses/frontend-pip"
-      working-directory: nodejs-hello-world
+      - name: Terraform Plan (app-deploy)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          terraform plan -out=tfplan
+          if [ -f tfplan ]; then
+            echo "Plan file created successfully."
+          else
+            echo "Plan file not found. Exiting."
+            exit 1
+          fi
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
-    - name: Terraform Apply
-      run: terraform apply -auto-approve tfplan
-      working-directory: nodejs-hello-world
-
-    - name: Verify Deployment
-      run: curl http://${{ secrets.PUBLIC_IP }}
+      - name: Terraform Apply (app-deploy)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
+          TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          if [ -f tfplan ]; then
+            terraform apply -auto-approve tfplan
+          else
+            echo "No plan file found to apply."
+            exit 1
+          fi
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world

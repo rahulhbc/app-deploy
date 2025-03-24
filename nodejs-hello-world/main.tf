@@ -1,65 +1,58 @@
-data "azurerm_resource_group" "existing_rg" {
-  name = "iac-secure-rg" # Ensure this matches the actual resource group name
+# Fetch existing Terraform state from 3TierIaC
+data "terraform_remote_state" "network" {
+  backend = "azurerm"
+
+  config = {
+    resource_group_name  = "RG-RBAC"
+    storage_account_name = "storagelab001"
+    container_name       = "3tier"
+    key                  = "terraform.tfstate"
+  }
 }
 
-data "azurerm_virtual_network" "vnet" {
-  name                = "iac-vnet"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-}
-
-data "azurerm_network_security_group" "frontend_nsg" {
-  name                = "frontend-nsg"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-}
-
-module "tier3_app" {
-  source              = "github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-  location            = data.azurerm_resource_group.existing_rg.location
-}
-
+# Use the outputs from 3TierIaC instead of defining network again
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                = "frontend-vm"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-  location            = data.azurerm_resource_group.existing_rg.location
+  resource_group_name = data.terraform_remote_state.network.outputs.resource_group_name
+  location            = data.terraform_remote_state.network.outputs.location
   size                = "Standard_B1s"
   admin_username      = "azureuser"
 
-  disable_password_authentication = true
+
   admin_ssh_key {
     username   = "azureuser"
-    public_key = file("~/.ssh/id_rsa.pub")
+    public_key = var.ssh_public_key
   }
 
-  network_interface_ids = [module.tier3_app.frontend_nic_id]
+  network_interface_ids = [data.terraform_remote_state.network.outputs.frontend_nic_id]
 
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
-    disk_size_gb         = 8
+    disk_size_gb         = 30
     name                 = "frontend-os-disk"
   }
 
   source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
-    sku       = "20.04-LTS"
-    version   = "latest"
+    sku       = "19_04-gen2"
+    version   = "19.04.202001220"
   }
+}
 
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get update -y",
-      "sudo apt-get install -y docker.io -y",
-      "sudo systemctl start docker",
-      "sudo docker run -d -p 3000:80 rahulhbc/nodejs-hello-world:v1"
-    ]
+#Resource for custom data
+resource "azurerm_virtual_machine_extension" "custom_script" {
+  name                 = "vmCustomScript"
+  virtual_machine_id   = azurerm_linux_virtual_machine.frontend_vm.id
+  publisher            = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.0"
 
-    connection {
-      type        = "ssh"
-      host        = module.tier3_app.frontend_public_ip
-      user        = "azureuser"
-      private_key = file("~/.ssh/id_rsa")
+  settings = <<SETTINGS
+    {
+        "fileUris": ["https://raw.githubusercontent.com/rahulhbc/app-deploy/refs/heads/feat/test_branch1/nodejs-hello-world/userdata.sh"],
+        "commandToExecute": "bash userdata.sh"
     }
-  }
+  SETTINGS
 }
