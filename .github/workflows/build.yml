@@ -104,7 +104,7 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           TF_VAR_ssh_public_key: ${{ secrets.SSH_PUBLIC_KEY }}
           TF_VAR_ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: terraform init - upgrade
+        run: terraform init -upgrade
         working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
       # Import Existing VM if Any
