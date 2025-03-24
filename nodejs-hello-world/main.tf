@@ -12,7 +12,7 @@ data "azurerm_network_security_group" "frontend_nsg" {
   resource_group_name = data.azurerm_resource_group.existing_rg.name
 }
 
-module "tier3_app" {
+module "network" {
   source              = "git::https://github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
 #  resource_group_name = data.azurerm_resource_group.existing_rg.name
 #  location            = data.azurerm_resource_group.existing_rg.location
