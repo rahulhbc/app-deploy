@@ -119,6 +119,7 @@ jobs:
         run: |
           terraform state show azurerm_linux_virtual_machine.frontend_vm || \
           terraform import azurerm_linux_virtual_machine.frontend_vm "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/iac-secure-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm"
+          terraform import azurerm_virtual_machine_extension.custom_script "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/iac-secure-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm/extensions/vmCustomScript"
         working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
       - name: Terraform Plan (app-deploy)
