@@ -5,7 +5,7 @@ output "public_ip" {
 
 output "resource_group_name" {
   description = "The name of the existing resource group"
-  value       = data.azurerm_resource_group.networking.outputs.resource_group_name
+  value       = data.terraform_remote_state.networking.outputs.resource_group_name
 }
 
 output "location" {
