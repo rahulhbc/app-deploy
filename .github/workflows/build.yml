@@ -89,6 +89,12 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Setup Docker Credentials
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "docker hub credentials set"    
+
       # Clean Up Terraform Lock and Cache    
       - name: Clean Up Terraform Lock and Cache
         run: |
