@@ -1,5 +1,3 @@
-install.sh
-----------------------------
 #!/bin/bash
 
 # Update system packages
