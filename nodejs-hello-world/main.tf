@@ -21,7 +21,12 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
   admin_ssh_key {
     username   = "azureuser"
-    public_key = file("~/.ssh/id_rsa.pub")
+    public_key = var.ssh_public_key
+  }
+
+  os_profile {
+    computer_name  = "frontend-vm"
+    admin_username = "azureuser"
   }
 
   os_profile_linux_config {
