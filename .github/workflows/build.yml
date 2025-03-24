@@ -35,7 +35,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform init
-        working-directory: multi_tier_arch
+        working-directory: 3TierIaC
 
       - name: Terraform Apply (3TierIaC)
         env:
@@ -44,7 +44,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform apply -auto-approve
-        working-directory: multi_tier_arch
+        working-directory: 3TierIaC
 
   deploy-app:
     runs-on: ubuntu-latest
