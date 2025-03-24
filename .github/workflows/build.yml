@@ -15,11 +15,12 @@ jobs:
       - name: Checkout 3TierIaC Repository
         uses: actions/checkout@v3
         with:
-          path: 3TierIaC/multi_tier_arch
+          repository : rahulhbc/3TierIaC
+          path: multi_tier_arch
         
       - name: Verify 3TierIaC Files
         run: ls -R
-        working-directory: 3TierIaC
+        working-directory: 3TierIaC/multi_tier_arch
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
