@@ -12,16 +12,16 @@ data "azurerm_network_security_group" "frontend_nsg" {
   resource_group_name = data.azurerm_resource_group.existing_rg.name
 }
 
-module "tier3_app" {
-  source              = "github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-  location            = data.azurerm_resource_group.existing_rg.location
+module "network" {
+   source              = "git::https://github.com/rahulhbc/3TierIaC.git//multi_tier_arch"
+#  resource_group_name = data.azurerm_resource_group.existing_rg.name
+#  location            = data.azurerm_resource_group.existing_rg.location
 }
 
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                = "frontend-vm"
-  resource_group_name = data.azurerm_resource_group.existing_rg.name
-  location            = data.azurerm_resource_group.existing_rg.location
+  resource_group_name = module.network.resource_group_name
+  location            = module.network.location
   size                = "Standard_B1s"
   admin_username      = "azureuser"
 
@@ -31,7 +31,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     public_key = file("~/.ssh/id_rsa.pub")
   }
 
-  network_interface_ids = [module.tier3_app.frontend_nic_id]
+  network_interface_ids = [module.network.frontend_nic_id]
 
   os_disk {
     caching              = "ReadWrite"
@@ -57,7 +57,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
     connection {
       type        = "ssh"
-      host        = module.tier3_app.frontend_public_ip
+      host        = module.network.frontend_public_ip
       user        = "azureuser"
       private_key = file("~/.ssh/id_rsa")
     }
