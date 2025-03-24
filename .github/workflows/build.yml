@@ -69,10 +69,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: app-deploy
-
-      # Debugging Step to Check Directory Structure
-      #- name: Debug - Full Directory Listing (App)
-      #  run: find ${{ github.workspace }} -type d
       
       # Set up SSH Keys (Deploy App)
       - name: Set up SSH Keys
@@ -92,6 +88,12 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      # Clean Up Terraform Lock and Cache    
+      - name: Clean Up Terraform Lock and Cache
+        run: |
+            rm -rf .terraform .terraform.lock.hcl
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
       # Import Existing VM if Any
       - name: Import Existing VM (if any)
