@@ -1,5 +1,5 @@
 # Fetch existing Terraform state from 3TierIaC
-data "terraform_remote_state" "networking" {
+data "terraform_remote_state" "network" {
   backend = "azurerm"
 
   config = {
@@ -10,11 +10,11 @@ data "terraform_remote_state" "networking" {
   }
 }
 
-# Use the outputs from 3TierIaC instead of defining networking again
+# Use the outputs from 3TierIaC instead of defining network again
 resource "azurerm_linux_virtual_machine" "frontend_vm" {
   name                = "frontend-vm"
-  resource_group_name = data.terraform_remote_state.networking.outputs.resource_group_name
-  location            = data.terraform_remote_state.networking.outputs.location
+  resource_group_name = data.terraform_remote_state.network.outputs.resource_group_name
+  location            = data.terraform_remote_state.network.outputs.location
   size                = "Standard_B1s"
   admin_username      = "azureuser"
 
@@ -24,7 +24,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     public_key = var.ssh_public_key
   }
 
-  network_interface_ids = [data.terraform_remote_state.networking.outputs.frontend_nic_id]
+  network_interface_ids = [data.terraform_remote_state.network.outputs.frontend_nic_id]
 
   os_disk {
     caching              = "ReadWrite"
@@ -50,7 +50,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
     connection {
       type        = "ssh"
-      host        = data.terraform_remote_state.networking.outputs.frontend_public_ip
+      host        = data.terraform_remote_state.network.outputs.frontend_public_ip
       user        = "azureuser"
       private_key = file("~/.ssh/id_rsa")
     }
