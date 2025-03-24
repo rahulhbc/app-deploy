@@ -15,7 +15,7 @@ jobs:
       - name: Checkout 3TierIaC Repository
         uses: actions/checkout@v3
         with:
-          path: 3TierIaC
+          path: 3TierIaC/multi_tier_arch
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -34,7 +34,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform init
-        working-directory: 3TierIaC
+        working-directory: 3TierIaC/multi_tier_arch
 
       - name: Terraform Apply (3TierIaC)
         env:
@@ -43,7 +43,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform apply -auto-approve
-        working-directory: 3TierIaC
+        working-directory: 3TierIaCmulti_tier_arch
 
   deploy-app:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
       - name: Checkout app-deploy Repository
         uses: actions/checkout@v3
         with:
-          path: app-deploy
+          path: app-deploy/nodejs-hello-world
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -72,7 +72,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform init
-        working-directory: app-deploy
+        working-directory: app-deploy/nodejs-hello-world
 
       - name: Terraform Plan (app-deploy)
         env:
@@ -88,7 +88,7 @@ jobs:
             echo "Plan file not found. Exiting."
             exit 1
           fi
-        working-directory: app-deploy
+        working-directory: app-deploy/nodejs-hello-world
 
       - name: Terraform Apply (app-deploy)
         env:
@@ -103,7 +103,7 @@ jobs:
             echo "No plan file found to apply."
             exit 1
           fi
-        working-directory: app-deploy
+        working-directory: app-deploy/nodejs-hello-world
 
       - name: Verify Deployment
         run: curl http://${{ secrets.PUBLIC_IP }}
