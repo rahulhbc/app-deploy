@@ -29,7 +29,7 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
-    disk_size_gb         = 8
+    disk_size_gb         = 30
     name                 = "frontend-os-disk"
   }
 
