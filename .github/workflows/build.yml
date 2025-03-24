@@ -61,6 +61,10 @@ jobs:
         with:
           path: app-deploy/nodejs-hello-world
 
+      # Debugging Step to Check Directory Structure
+      - name: Debug - Full Directory Listing (App)
+        run: find ${{ github.workspace }} -type d
+              
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
         with:
