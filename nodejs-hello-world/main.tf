@@ -39,20 +39,19 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
     sku       = "19_04-gen2"
     version   = "19.04.202001220"
   }
+}
 
-  provisioner "remote-exec" {
-    inline = [
-      "sudo apt-get update -y",
-      "sudo apt-get install -y docker.io -y",
-      "sudo systemctl start docker",
-      "sudo docker run -d -p 3000:80 rahulhbc/nodejs-hello-world:v1"
-    ]
+#Resource for custom data
+resource "azurerm_virtual_machine_extension" "custom_script" {
+  name                 = "vmCustomScript"
+  virtual_machine_id   = azurerm_linux_virtual_machine.frontend_vm.id
+  publisher            = "Microsoft.Azure.Extensions"
+  type                 = "CustomScript"
+  type_handler_version = "2.0"
 
-    connection {
-      type        = "ssh"
-      host        = data.terraform_remote_state.network.outputs.frontend_pip
-      user        = "azureuser"
-      private_key = file("~/.ssh/id_rsa")
+  settings = <<SETTINGS
+    {
+        "commandToExecute": "sudo apt-get update -y && sudo apt-get install -y nginx && echo '<h1>Hello, World from Azure VM!</h1>' | sudo tee /var/www/html/index.html && sudo systemctl restart nginx"
     }
-  }
+  SETTINGS
 }
