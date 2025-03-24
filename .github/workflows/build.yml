@@ -18,9 +18,9 @@ jobs:
           repository : rahulhbc/3TierIaC
           path: multi_tier_arch
       
-      - name: Debug - List Files
-        run: ls -R
-        working-directory: ${{ github.workspace }}
+      # Debugging Step to Check Directory Structure
+      - name: Debug - List Files After Checkout (Infra)
+        run: ls -R ${{ github.workspace }}/multi_tier_arch
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v2
@@ -39,7 +39,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform init
-        working-directory: ${{ github.workspace }}/3TierIaC
+        working-directory: ${{ github.workspace }}/multi_tier_arch
         
 
       - name: Terraform Apply (3TierIaC)
@@ -49,7 +49,7 @@ jobs:
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terraform apply -auto-approve
-        working-directory: ${{ github.workspace }}/3TierIaC
+        working-directory: ${{ github.workspace }}/multi_tier_arch
 
   deploy-app:
     runs-on: ubuntu-latest
