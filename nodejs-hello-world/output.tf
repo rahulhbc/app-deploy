@@ -1,6 +1,6 @@
-output "frontend_pip" {
+output "frontend_public_ip " {
   description = "Public IP address of the VM"
-  value       = data.terraform_remote_state.network.outputs.frontend_pip
+  value       = data.terraform_remote_state.network.outputs.frontend_public_ip 
 }
 
 output "resource_group_name" {
@@ -23,7 +23,7 @@ output "nsg_name" {
   value       = data.terraform_remote_state.network.outputs.nsg_name
 }
 
-output "frontend_nic" {
+output "frontend_nic_id" {
   description = "Network Interface ID from Network State"
-  value       = data.terraform_remote_state.network.outputs.frontend_nic
+  value       = data.terraform_remote_state.network.outputs.frontend_nic_id
 }
