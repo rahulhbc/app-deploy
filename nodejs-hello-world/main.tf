@@ -51,7 +51,8 @@ resource "azurerm_virtual_machine_extension" "custom_script" {
 
   settings = <<SETTINGS
     {
-        "commandToExecute": "sudo apt-get update -y && sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable' && sudo apt-get update -y && sudo apt-get install -y docker-ce && sudo systemctl start docker && sudo docker pull rahulhbc/nodejs-hello-world:v1 && sudo docker run -d -p 80:8080 rahulhbc/nodejs-hello-world:v1"
+        "fileUris": ["https://github.com/rahulhbc/app-deploy/tree/feat/test_branch1/nodejs-hello-world/userdata.sh"],
+        "commandToExecute": "bash userdata.sh"
     }
   SETTINGS
 }
