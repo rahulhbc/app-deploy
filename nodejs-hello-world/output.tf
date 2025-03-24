@@ -1,4 +1,4 @@
-output "frontend_public_ip " {
+output "frontend_public_ip" {
   description = "Public IP address of the VM"
   value       = data.terraform_remote_state.network.outputs.frontend_public_ip 
 }
