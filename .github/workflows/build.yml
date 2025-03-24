@@ -16,7 +16,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-      # Create SSH Key Files
     - name: Create SSH Key Files
       run: |
         mkdir -p ~/.ssh
@@ -35,27 +34,77 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+    - name: Clean Up Stale Plan Files and State Lock
+      run: |
+          rm -f tfplan
+          terraform force-unlock -force 0 || true
+      working-directory: nodejs-hello-world
+
     - name: Terraform Init
+      env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       run: terraform init
       working-directory: nodejs-hello-world
 
-    - name: Terraform Validate
-      run: terraform validate
-      working-directory: nodejs-hello-world
-  
-    - name: Terraform Plan
-      run: terraform plan -out=tfplan
+    - name: Terraform State Cleanup (Optional)
+      env:
+        ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+        ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      run: |
+        terraform state rm module.network.azurerm_virtual_network.vnet || echo "Resource not found in state"
+        terraform state rm module.network.azurerm_network_security_group.frontend_nsg || echo "Resource not found in state"
+        terraform state rm module.network.azurerm_public_ip.frontend_pip || echo "Resource not found in state"
+        terraform state rm module.network.aazurerm_subnet.frontend || echo "Resource not found in state"
       working-directory: nodejs-hello-world
 
-    - name: Terraform Import Resource Group
-      run: | 
-             terraform import module.tier3_app.azurerm_virtual_network.vnet "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/virtualNetworks/iac-vnet"
-             terraform import module.tier3_app.azurerm_network_security_group.frontend_nsg "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/networkSecurityGroups/frontend-nsg"
-             terraform import module.tier3_app.azurerm_public_ip.frontend_pip "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/publicIPAddresses/frontend-pip"
+    - name: Terraform Plan
+      env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}  
+      run: |
+          terraform plan -out=tfplan
+          if [ -f tfplan ]; then
+            echo "Plan file created successfully."
+          else
+            echo "Plan file not found. Exiting."
+            exit 1
+          fi
       working-directory: nodejs-hello-world
+   
+#    - name: Terraform Import Resources
+#      env:
+#          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+#          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+#          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+#          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#      run: | 
+#        terraform import module.network.azurerm_resource_group.rg /subscriptions/***/resourceGroups/iac-secure-rg
+#       terraform import module.network.azurerm_virtual_network.vnet "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/virtualNetworks/iac-vnet"
+#       terraform import module.network.azurerm_network_security_group.frontend_nsg "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/networkSecurityGroups/frontend-nsg"
+#       terraform import module.network.azurerm_public_ip.frontend_pip "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/publicIPAddresses/frontend-pip"
+#       terraform import module.network.azurerm_subnet.frontend "/subscriptions/7c63e1b6-0a9a-487e-b657-e58721d3e957/resourceGroups/iac-secure-rg/providers/Microsoft.Network/virtualNetworks/iac-vnet/subnets/frontend-subnet"
+#      working-directory: nodejs-hello-world
 
     - name: Terraform Apply
-      run: terraform apply -auto-approve tfplan
+      env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      run: |
+          if [ -f tfplan ]; then
+            terraform apply -auto-approve tfplan
+          else
+            echo "No plan file found to apply."
+            exit 1
+          fi
       working-directory: nodejs-hello-world
 
     - name: Verify Deployment
