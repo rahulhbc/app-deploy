@@ -3,10 +3,10 @@ data "terraform_remote_state" "network" {
   backend = "azurerm"
 
   config = {
-    resource_group_name  = "iac-secure-rg"
-    storage_account_name = "appdeploy001"
-    container_name       = "tfstate"
-    key                  = "3TierIaC.tfstate"
+    resource_group_name  = "RG-RBAC"
+    storage_account_name = "storagelab001"
+    container_name       = "3tier"
+    key                  = "terraform.tfstate"
   }
 }
 
