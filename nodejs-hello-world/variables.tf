@@ -1,9 +1,9 @@
 variable "resource_group_name" {
   description = "Resource group name"
-  default     = module.network.resource_group_name
+  default     = "iac-secure-rg"
 }
 
 variable "location" {
   description = "Azure region"
-  default     = module.network.location
+  default     = "East US"
 }
