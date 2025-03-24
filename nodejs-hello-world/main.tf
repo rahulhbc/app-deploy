@@ -35,9 +35,9 @@ resource "azurerm_linux_virtual_machine" "frontend_vm" {
 
   source_image_reference {
     publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "22.04-LTS"
-    version   = "latest"
+    offer     = "0001-com-ubuntu-server-jammy"
+    sku       = "22.04-lts-gen2"
+    version   = "22.04.202402140"
   }
 
   provisioner "remote-exec" {
