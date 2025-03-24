@@ -93,6 +93,18 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # Import Existing VM if Any
+      - name: Import Existing VM (if any)
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          terraform state show azurerm_linux_virtual_machine.frontend_vm || \
+          terraform import azurerm_linux_virtual_machine.frontend_vm "/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/resourceGroups/iac-secure-rg/providers/Microsoft.Compute/virtualMachines/frontend-vm"
+        working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
+
       - name: Terraform Init (app-deploy)
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
@@ -139,7 +151,14 @@ jobs:
           fi
         working-directory: ${{ github.workspace }}/app-deploy/nodejs-hello-world
 
-      # Verify Depolyment
+      # Verify Deployment
       - name: Verify Deployment
-        run: curl http://${{ secrets.PUBLIC_IP }}
-
+        run: |
+          echo "Fetching Public IP..."
+          PUBLIC_IP=$(az network public-ip show --resource-group iac-secure-rg --name frontend-pip --query ipAddress -o tsv)
+          if [ -n "$PUBLIC_IP" ]; then
+            curl http://$PUBLIC_IP
+          else
+            echo "Public IP not found"
+            exit 1
+          fi
