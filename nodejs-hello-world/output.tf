@@ -22,3 +22,8 @@ output "nsg_name" {
   description = "The name of the existing Network Security Group"
   value       = data.terraform_remote_state.networking.outputs.nsg_name
 }
+
+output "frontend_nic" {
+  description = "Network Interface ID from Network State"
+  value       = data.terraform_remote_state.networking.outputs.frontend_nic
+}
